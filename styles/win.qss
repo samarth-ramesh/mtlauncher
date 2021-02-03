@@ -1,0 +1,29 @@
+.QWidget {
+    background-color: #3F4045;
+    color: ivory;
+}
+
+.QGraphicsView {
+    background-color: #3F4045;
+}
+
+.QLabel {
+    color: ivory;
+}
+
+QPushButton {
+    background-color: #C23B22;
+}
+
+QPushButton:pressed {
+    background-color: #CB410B;
+    color: ivory;
+}
+
+QPushButton:flat {
+    border: none; /* no border for a flat push button */
+}
+
+QPushButton:default {
+    border-color: navy; /* make the default button prominent */
+}
