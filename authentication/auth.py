@@ -5,7 +5,7 @@ from sqlite3.dbapi2 import DatabaseError, connect
 
 def checkLogin(passwd, login):
     conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
-    inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 10000)
+    inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 100000)
     cur = conn.cursor()
     cur.execute("SELECT passwd FROM users WHERE username = ?", (login, ))
     try:
@@ -33,7 +33,7 @@ def runSetup():
     print('Loaded Database')
 
 def addUser(uname, passwd):
-    inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 10000)
+    inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 100000)
     
     try:
         conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))

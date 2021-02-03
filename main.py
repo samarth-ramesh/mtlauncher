@@ -9,15 +9,15 @@ if __name__ == '__main__':
 
 from authentication import auth
 from styles import compile
+import runner
+import sessionVars
 
 from PySide2.QtWidgets import QApplication, QGraphicsScene
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile, QUrl
 from PySide2.QtSvg import QGraphicsSvgItem
-
-
-def runMT(addr, passwd, uname):
-    os.system('minetest --config "assets/config/mtclient.conf" --go --name "{}" --password "{}" --address "{}"'.format(uname, passwd, addr))
+from PySide2.QtGui import QPixmap, QIcon
+    
 
 def login(win):
     passwd = win.centralWidget().passwd.text()
@@ -31,28 +31,63 @@ def login(win):
             with open(errMsg, 'r') as fp:
                 win.centralWidget().elabel.setText(fp.read())
         else:
+            sessionVars.password = passwd
+            sessionVars.username = uname
+
             changeWidgetToGo(win, uname)
-            
+
+def showPass(win):
+    if win.centralWidget().showPass.isChecked():
+        win.centralWidget().passwd.show()
+        win.centralWidget().passwdIn.show()
+    else:
+        win.centralWidget().passwd.hide()
+        win.centralWidget().passwdIn.hide()
 
 def changeWidgetToGo(win, uname):
     ui_file = QFile("views/go.widget.ui")
     ui_file.open(QFile.ReadOnly)
     
     lder = QUiLoader()
-    winNext = lder.load(ui_file)
+    
+    dlg = lder.load(ui_file)
+    
     win.centralWidget().hide()
-    win.setCentralWidget(winNext)
-    showLogo(win.centralWidget(), 'minetest_logo.svg')
+    win.setCentralWidget(dlg)
+
+    engs = runner.getEngs()
+    pxmp = QPixmap('assets/icon.png', format="png")
+    icn = QIcon(pxmp)
+    for engine in engs:
+        win.centralWidget().engines.addItem(icn, engine)
+    
+    win.centralWidget().passwd.hide()
+    win.centralWidget().passwdIn.hide()
+
     win.centralWidget().uname.setText(uname)
+    win.centralWidget().port.setText('30000')
+    win.centralWidget().addr.setText('nri.edgy1.net')
+
+    win.centralWidget().go.clicked.connect(lambda: runner.intiate(win.centralWidget().addr.text(), win.centralWidget().port.text(), win.centralWidget().uname.text(), win.centralWidget().engines.currentText(), win.centralWidget().passwdIn.text(), win.centralWidget().showPass.isChecked()))
+
+    win.centralWidget().showPass.stateChanged.connect(lambda: showPass(win))
+
+    showLogo(win.centralWidget(), 'minetest_logo.svg')
+
 
 
 def showLogo(win, logoName):
+    
     logoPath = os.path.join('assets' , logoName)
+    
     ico = QGraphicsSvgItem(logoPath)
     scene = QGraphicsScene()
     scene.addItem(ico)
-    win.logo.setScene(scene)
     
+    win.logo.setScene(scene)
+
+
+
 def getJoinHelp():
     
     ui_file = QFile("views/help.ui")
@@ -83,11 +118,20 @@ def initUser(win):
         win.centralWidget().eMesg.setText('Error, Cannot have empty UserName')
         return None
     
+    if len(uname) > 20:
+        win.centralWidget().eMesg.setText(f'Error, UserName too long. \n{len(uname)} > 20')
+        return None
+    
+    if any(char in list(sessionVars.whitespace) for char in uname):
+        win.centralWidget().eMesg.setText(f'Error. Username contains whitespace')
+
+    if passwd == uname:
+        win.centralWidget().eMesg.setText('Error, Cannot have UserName == Password')
+        return None
+
     succsess, error = auth.addUser(uname, passwd)
     if not succsess:
-        win.centralWidget().eMesg.setText(error)
-        print(error)
-    
+        win.centralWidget().eMesg.setText(error)    
     else:
         changeWidgetToGo(win, uname)
 

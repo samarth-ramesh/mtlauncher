@@ -1,6 +1,7 @@
 .QWidget {
     background-color: #3F4045;
     color: ivory;
+    text-align: HCenter;
 }
 
 .QGraphicsView {
@@ -26,4 +27,8 @@ QPushButton:flat {
 
 QPushButton:default {
     border-color: navy; /* make the default button prominent */
+}
+
+QCheckBox {
+    color: ivory;
 }

@@ -340,6 +340,11 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>username</tabstop>
+  <tabstop>passwd</tabstop>
+  <tabstop>usernamesubmit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
