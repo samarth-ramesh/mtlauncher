@@ -2,6 +2,10 @@
 #  following encoding: utf-8
 import sys
 import os
+import pathlib
+
+if __name__ == '__main__':
+    os.chdir(pathlib.Path(__file__).parent.absolute())
 
 from authentication import auth
 from styles import compile
@@ -86,14 +90,41 @@ def initUser(win):
     
     else:
         changeWidgetToGo(win, uname)
+
+
+
+def initNscreen(stylesheets):
+    app = QApplication([])
+    app.setStyleSheet(stylesheets)
+
+    ui_file = QFile("views/main.ui")
+    ui_file.open(QFile.ReadOnly)
+    wdg_file = QFile("views/start.ui")
+
+    lder = QUiLoader()
+    
+    win = lder.load(ui_file)
+    wdg = lder.load(wdg_file)
+
+    win.setCentralWidget(wdg)
+
+    showLogo(win.centralWidget(), 'minetest_logo.svg')
+    
+    win.centralWidget().help.clicked.connect(lambda: getJoinHelp())
+    win.centralWidget().go.clicked.connect(lambda: initUser(win))
+    
+    auth.runSetup()
+
+    win.show()
+    app.exec_()
+    sys.exit(0)
         
-        
+
 
 def initRscreen(stylesheets):
     
     app = QApplication([])
     app.setStyleSheet(stylesheets)
-    # ...
     
     ui_file = QFile("views/main.ui")
     ui_file.open(QFile.ReadOnly)
@@ -117,29 +148,6 @@ def initRscreen(stylesheets):
     sys.exit(0)
 
 
-def initNscreen(stylesheets):
-    app = QApplication([])
-    app.setStyleSheet(stylesheets)
-
-    ui_file = QFile("views/main.ui")
-    ui_file.open(QFile.ReadOnly)
-    wdg_file = QFile("views/start.ui")
-
-    lder = QUiLoader()
-    
-    win = lder.load(ui_file)
-    wdg = lder.load(wdg_file)
-
-    win.setCentralWidget(wdg)
-
-    showLogo(win.centralWidget(), 'minetest_logo.svg')
-    win.centralWidget().help.clicked.connect(lambda: getJoinHelp())
-    win.centralWidget().go.clicked.connect(lambda: initUser(win))
-    auth.runSetup()
-
-    win.show()
-    app.exec_()
-    sys.exit(0)
 
 if __name__ == "__main__":
     stylesheets = compile()
