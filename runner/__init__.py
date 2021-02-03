@@ -26,7 +26,7 @@ def mkPass(uname):
     unameS = uname + str(random.randint(1,100))
     unameLS = list(unameS)
     random.shuffle(unameLS)
-    return (''.join(unameLS))[0]
+    return (''.join(unameLS))
 
 def intiate(addr, port, uname, engName, passIn, noIgnorePass):
     if noIgnorePass:
@@ -46,5 +46,8 @@ def intiate(addr, port, uname, engName, passIn, noIgnorePass):
     
     confPath = os.path.join(os.getcwd(), 'assets', 'config', 'mtclient.conf')
 
-    args = ['--go', '--config', confPath, '--address', addr, '--port', port, '--password', passwd[0]]
+    args = ['--go', '--config {}'.format(confPath), '--address {}'.format(addr), '--port "{}"'.format(port), '--password "{}"'.format(passwd), '--name {}'.format(uname)]
+    args = ' '.join(args)
+    print(args)
+    args = args.split(' ')
     run(engName, args)

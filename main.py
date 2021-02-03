@@ -195,7 +195,7 @@ def initRscreen(stylesheets):
 
 if __name__ == "__main__":
     stylesheets = compile()
-    if os.path.isfile(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3')):
+    if os.path.isfile(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3')):
         initRscreen(stylesheets)
     else:
         initNscreen(stylesheets)

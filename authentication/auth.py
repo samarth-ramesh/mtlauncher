@@ -1,10 +1,11 @@
 import hashlib
 import sqlite3
 import os
+import pathlib
 from sqlite3.dbapi2 import DatabaseError, connect
 
 def checkLogin(passwd, login):
-    conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
+    conn = sqlite3.connect(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
     inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 100000)
     cur = conn.cursor()
     cur.execute("SELECT passwd FROM users WHERE username = ?", (login, ))
@@ -18,12 +19,12 @@ def checkLogin(passwd, login):
 
 def runSetup():
     try:
-        os.makedirs(os.path.join(os.getenv('HOME'), '.config', 'mtclient'))
+        os.makedirs(os.path.join(pathlib.Path().home(), '.config', 'mtclient'))
     except(FileExistsError):
         pass
     except:
         raise
-    conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
+    conn = sqlite3.connect(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
     cur = conn.cursor()
     with open('assets/sql/init.sql', 'r') as fp:
         for statement in fp:
@@ -36,7 +37,7 @@ def addUser(uname, passwd):
     inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 100000)
     
     try:
-        conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
+        conn = sqlite3.connect(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
         cur = conn.cursor()
         cur.execute("INSERT INTO users(username, passwd) VALUES (?, ?)", (uname, inp.hex(), ))
         conn.commit()
