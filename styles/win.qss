@@ -12,23 +12,28 @@
     color: ivory;
 }
 
-QPushButton {
+.QPushButton {
     background-color: #C23B22;
 }
 
-QPushButton:pressed {
+.QPushButton:pressed {
     background-color: #CB410B;
     color: ivory;
 }
 
-QPushButton:flat {
+.QPushButton:flat {
     border: none; /* no border for a flat push button */
 }
 
-QPushButton:default {
+.QPushButton:default {
     border-color: navy; /* make the default button prominent */
 }
 
-QCheckBox {
+.QCheckBox {
     color: ivory;
+}
+
+.QListWidgetItem {
+    background-color: #CB410B;
+    color: red
 }

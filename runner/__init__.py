@@ -1,9 +1,11 @@
-import subprocess, os, sqlite3, random, platform
+import subprocess, os, sqlite3, random, platform, sys, traceback
 
 from PySide2.QtCore import QProcess, QFile
 from PySide2.QtUiTools import QUiLoader
+from PySide2.QtWidgets import QListWidgetItem
 
-
+from authentication import auth
+import sessionVars
 
 def run(engname, rargs: list):
     if not os.path.isdir(os.path.join(os.getcwd(), 'runner', engname)):
@@ -36,6 +38,24 @@ def mkPass(uname):
     return (''.join(unameLS))
 
 
+def showException(e):
+    dlg_file = QFile('views/decrypt_error.dialog.ui')
+    lder = QUiLoader()
+    dlg = lder.load(dlg_file)
+
+    tb = e.__traceback__
+    x= '\n'.join(traceback.format_exception(e,e,tb))
+    ql = QListWidgetItem()
+    ql.setText(str(x))
+    print(x)
+    dlg.lw.addItem(ql) 
+
+    ## error handling->show traceback, then exit
+
+    dlg.exec_()
+    sys.exit(1)
+
+
 def getPass(uname, port, addr):
     conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
     cur = conn.cursor()
@@ -44,16 +64,23 @@ def getPass(uname, port, addr):
     dbVal = cur.fetchone()
     conn.close()
     if dbVal:
-        passwd = dbVal[0]    
-        return passwd
-    else:
-        return None
+        try:
+            return auth.decryptPayload(bytes(sessionVars.password, encoding='UTF-8'), auth.getSalt(uname, addr, port), bytes(dbVal[0], encoding='UTF-8'))
+        except Exception as e:
+            showException(e)
+            
+
 
 
 def savePasswd(addr, port, uname, passwd):
+    try:
+        passToken = auth.encryptPayload(bytes(sessionVars.password, encoding='UTF-8'), auth.getSalt(uname, addr, port), bytes(passwd, encoding='UTF-8'))
+    except Exception as e:
+        showException(e)
+    
     conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
     cur = conn.cursor()
-    cur.execute('INSERT INTO passwds(addr, port, uname, passwd) VALUES (?, ?, ?, ?)', (addr, port, uname, passwd))
+    cur.execute('INSERT INTO passwds(addr, port, uname, passwd) VALUES (?, ?, ?, ?)', (addr, port, uname, passToken))
     conn.commit()
     conn.close()
     print('saved Password')
@@ -74,7 +101,6 @@ def intiate(addr, port, uname, engName, passIn, noIgnorePass, win):
     if noIgnorePass:
         passwd = (passIn,None,)[0]
         showAskPass(uname, addr, port, passwd)
-        print("test")
     else:
         passwd = getPass(uname, port, addr)
         if not passwd:
