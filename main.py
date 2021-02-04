@@ -68,7 +68,7 @@ def changeWidgetToGo(win, uname):
     win.centralWidget().port.setText('30000')
     win.centralWidget().addr.setText('nri.edgy1.net')
 
-    win.centralWidget().go.clicked.connect(lambda: runner.intiate(win.centralWidget().addr.text(), win.centralWidget().port.text(), win.centralWidget().uname.text(), win.centralWidget().engines.currentText(), win.centralWidget().passwdIn.text(), win.centralWidget().showPass.isChecked()))
+    win.centralWidget().go.clicked.connect(lambda: runner.intiate(win.centralWidget().addr.text(), win.centralWidget().port.text(), win.centralWidget().uname.text(), win.centralWidget().engines.currentText(), win.centralWidget().passwdIn.text(), win.centralWidget().showPass.isChecked(), win))
 
     win.centralWidget().showPass.stateChanged.connect(lambda: showPass(win))
 
@@ -143,7 +143,7 @@ def initNscreen(stylesheets):
 
     ui_file = QFile("views/main.ui")
     ui_file.open(QFile.ReadOnly)
-    wdg_file = QFile("views/start.ui")
+    wdg_file = QFile("views/start.widget.ui")
 
     lder = QUiLoader()
     
@@ -195,7 +195,10 @@ def initRscreen(stylesheets):
 
 if __name__ == "__main__":
     stylesheets = compile()
+    print(os.path.isfile(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3')), '\n', os.listdir(os.path.join(pathlib.Path().home(), '.config', 'mtclient')))
     if os.path.isfile(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3')):
+        print('using old db')
         initRscreen(stylesheets)
     else:
+        print('using new db')
         initNscreen(stylesheets)
