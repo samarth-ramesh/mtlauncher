@@ -2,7 +2,6 @@ import hashlib
 import sqlite3
 import os
 import pathlib
-from sqlite3.dbapi2 import DatabaseError, connect
 
 def checkLogin(passwd, login):
     conn = sqlite3.connect(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
@@ -22,8 +21,8 @@ def runSetup():
         os.makedirs(os.path.join(pathlib.Path().home(), '.config', 'mtclient'))
     except(FileExistsError):
         pass
-    except:
-        raise
+    except Exception as e:
+        raise(e)
     conn = sqlite3.connect(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
     cur = conn.cursor()
     with open('assets/sql/init.sql', 'r') as fp:
