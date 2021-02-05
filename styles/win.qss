@@ -13,7 +13,7 @@
 }
 
 .QPushButton {
-    background-color: #C23B22;
+    background-color: #53ac56;
 }
 
 .QPushButton:pressed {
