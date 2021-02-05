@@ -2,11 +2,11 @@ import hashlib
 import sqlite3
 import os
 import pathlib
-import base64
 
 from Crypto.Cipher import ChaCha20
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Hash import SHA512
+
 
 def checkLogin(passwd, login):
     conn = sqlite3.connect(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
@@ -20,6 +20,7 @@ def checkLogin(passwd, login):
             return (1, None)
     except(TypeError, IndexError):
         return (0, "assets/helptext/passwd_error.md")
+
 
 def runSetup():
     try:
@@ -36,6 +37,7 @@ def runSetup():
         conn.commit()
     conn.close()
     print('Loaded Database')
+
 
 def addUser(uname, passwd):
     inp = hashlib.pbkdf2_hmac('sha256', bytes(passwd, 'UTF-8'), b'lah di dah, a very strong salt', 100000)
@@ -58,15 +60,18 @@ def addUser(uname, passwd):
         pass
     return True, None
 
+
 def encryptPayload(passwd: bytes, salt: bytes, iv: bytes, payload: bytes):
     key = PBKDF2(password=passwd, salt=salt, hmac_hash_module=SHA512, dkLen=32)
     cipher = ChaCha20.new(key=key, nonce=iv)
     return cipher.encrypt(payload)
-    
+
+
 def decryptPayload(passwd: bytes, salt: bytes, iv: bytes, payload: bytes):
     key = PBKDF2(password=passwd, salt=salt, hmac_hash_module=SHA512, dkLen=32)
     cipher = ChaCha20.new(key=key, nonce=iv)
     return cipher.decrypt(payload)
+
 
 def getSalt(uname: str, addr: str, port: str):
     return hashlib.sha256(bytes((uname+addr+port), encoding='UTF-8')).digest()
