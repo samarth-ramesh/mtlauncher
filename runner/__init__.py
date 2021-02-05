@@ -1,11 +1,17 @@
-import subprocess, os, sqlite3, random, platform, sys, traceback
+import os
+import platform
+import random
+import sqlite3
+import subprocess
+import sys
+import traceback
 
-from PySide2.QtCore import QProcess, QFile
+import sessionVars
+from authentication import auth
+from PySide2.QtCore import QFile, QProcess
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QListWidgetItem
 
-from authentication import auth
-import sessionVars
 
 def run(engname, rargs: list):
     if not os.path.isdir(os.path.join(os.getcwd(), 'runner', engname)):
@@ -47,7 +53,7 @@ def showException(e):
     x= '\n'.join(traceback.format_exception(e,e,tb))
     ql = QListWidgetItem()
     ql.setText(str(x))
-    print(x)
+    #print(x)
     dlg.lw.addItem(ql) 
 
     ## error handling->show traceback, then exit
@@ -60,30 +66,32 @@ def getPass(uname, port, addr):
     conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
     cur = conn.cursor()
     
-    cur.execute('SELECT passwd FROM passwds WHERE (((uname = ?) AND (addr = ?)) AND (port = ?))', (uname, addr, port))
+    cur.execute('SELECT passwd, iv FROM passwds WHERE (((uname = ?) AND (addr = ?)) AND (port = ?))', (uname, addr, port))
     dbVal = cur.fetchone()
     conn.close()
     if dbVal:
         try:
-            return auth.decryptPayload(bytes(sessionVars.password, encoding='UTF-8'), auth.getSalt(uname, addr, port), bytes(dbVal[0], encoding='UTF-8'))
+            rv = auth.decryptPayload(bytes(sessionVars.password, encoding='UTF-8'), auth.getSalt(uname, addr, port), dbVal[1], dbVal[0])
+            print(rv)
+            return rv.decode(encoding="UTF-8")
         except Exception as e:
-            showException(e)
-            
+            showException(e)      
 
 
 
 def savePasswd(addr, port, uname, passwd):
+    iv = os.urandom(8)
     try:
-        passToken = auth.encryptPayload(bytes(sessionVars.password, encoding='UTF-8'), auth.getSalt(uname, addr, port), bytes(passwd, encoding='UTF-8'))
+        passToken = auth.encryptPayload(bytes(sessionVars.password, encoding='UTF-8'), auth.getSalt(uname, addr, port), iv, bytes(passwd, encoding='UTF-8'))
     except Exception as e:
         showException(e)
     
     conn = sqlite3.connect(os.path.join(os.getenv('HOME'), '.config', 'mtclient', 'database.sqlite3'))
     cur = conn.cursor()
-    cur.execute('INSERT INTO passwds(addr, port, uname, passwd) VALUES (?, ?, ?, ?)', (addr, port, uname, passToken))
+    cur.execute('INSERT INTO passwds(addr, port, uname, passwd, iv) VALUES (?, ?, ?, ?, ?)', (addr, port, uname, passToken, iv,))
     conn.commit()
     conn.close()
-    print('saved Password')
+    #print('saved Password')
 
 def showAskPass(uname: str, addr: str, port: str, passwd: str):
     dlg_file = QFile('views/savepasswd.dialog.ui')
@@ -91,7 +99,7 @@ def showAskPass(uname: str, addr: str, port: str, passwd: str):
     dlg = lder.load(dlg_file)
     dlg.addr.setText(f'{addr} :{port}')
     dlg.user.setText(f'and user {uname}')
-    print(addr, port, uname, passwd)
+    #print(addr, port, uname, passwd)
     dlg.accepted.connect(lambda: savePasswd(addr, port, uname, passwd))
     dlg.exec_()
 
@@ -110,6 +118,6 @@ def intiate(addr, port, uname, engName, passIn, noIgnorePass, win):
 
     args = ['--go', '--config {}'.format(confPath), '--address {}'.format(addr), '--port "{}"'.format(port), '--password {}'.format(passwd), '--name {}'.format(uname)]
     args = ' '.join(args)
-    print(args)
+    #print(args)
     args = args.split(' ')
     run(engName, args)
