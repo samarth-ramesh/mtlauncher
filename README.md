@@ -6,17 +6,18 @@ Please note that things are still *very* pre alpha right now. It is known to wor
 
 ## Installation
 
-install pyside2, qt5 on your system. This varies from distro to distro.
+install pyside2, qt5 and the pyCryptoDome library on your system. This varies from distro to distro.
 On Arch Linux, use
 ```bash
-pacman -Sy pyside2 qt5
+pacman -Sy pyside2 qt5 python-pycryptodome
 ```
 Then, clone this repo into any location. /opt can be used as well. I personally use ``~/Documents/minetest/client``.
 Ensure that you HOME variable is set. That is where the good stuff is stored.  
 
-For your convenience, I have provided a pre compiled version of minetest with all source included.
+For your convenience, I have provided two pre compiled versiond of minetest with source included. One is latest stable, while the other is minetest 0.4.17.1, the last of the monetest 0.4.x series.
 
 ## Using
+
 On first run (~~or whenever ~/.config/mtclient/database.sqlite is non existent~~), you are prompted to create a new username and password.  
 After that, you will be directed to the "go" page. You can only join remote games currently (sue me, but this only alpha).
 
@@ -40,9 +41,9 @@ The ``exit to menu`` option & the ``exit to OS`` option now have the same meanin
 ## Notes
 
 If you lose your master password, there is NO way of retriving your saved passwords. KEEP IT SAFE.  
-We use AES256 to encrypt your passwords (via the cryptography module). The flow goes as such:
+We use ChaCha20 to encrypt your passwords (via the pyCryptoDome module). The flow goes as such:
 
-login -> We store your password in memory -> Create a new password/ save your password -> we encrypt using Fernet, a salt and 100000 iterations -> we store it into the database.
+login -> We store your password in memory -> Create a new password/ save your password -> we encrypt using ChaCha20 -> we store it into the database.
 
 login -> We store your password in memory -> You join a server -> We retrive your encrypted password from database -> We decrypt using same salt -> we store the decrypted password in memory -> minetest is launched with --password = < password > switch.
 
