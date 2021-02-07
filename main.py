@@ -1,8 +1,9 @@
 # This is free software licensed under the MIT license.
 # Copyright (c) 2021 Samarth Ramesh <samarthr1@outlook.com>
-# You should have recived a copy of the MIT license with this file. In case you ahve not, visit https://github.com/samarth-ramsh/mtlaucher
+# You should have recived a copy of the MIT license with this file.
+# In case you have not, visit https://github.com/samarth-ramsh/mtlaucher.
 
-# This Python file uses 
+# This Python file uses
 #  following encoding: utf-8
 import sys
 import os
@@ -21,7 +22,7 @@ from PySide2.QtUiTools import QUiLoader
 from PySide2.QtCore import QFile, QUrl
 from PySide2.QtSvg import QGraphicsSvgItem
 from PySide2.QtGui import QPixmap, QIcon
-    
+
 
 def login(win):
     passwd = win.centralWidget().passwd.text()
@@ -40,6 +41,7 @@ def login(win):
 
             changeWidgetToGo(win, uname)
 
+
 def showPass(win):
     if win.centralWidget().showPass.isChecked():
         win.centralWidget().passwd.show()
@@ -48,14 +50,15 @@ def showPass(win):
         win.centralWidget().passwd.hide()
         win.centralWidget().passwdIn.hide()
 
+
 def changeWidgetToGo(win, uname):
     ui_file = QFile("views/go.widget.ui")
     ui_file.open(QFile.ReadOnly)
-    
+
     lder = QUiLoader()
-    
+
     dlg = lder.load(ui_file)
-    
+
     win.centralWidget().hide()
     win.setCentralWidget(dlg)
 
@@ -64,7 +67,7 @@ def changeWidgetToGo(win, uname):
     icn = QIcon(pxmp)
     for engine in engs:
         win.centralWidget().engines.addItem(icn, engine)
-    
+
     win.centralWidget().passwd.hide()
     win.centralWidget().passwdIn.hide()
 
@@ -79,31 +82,30 @@ def changeWidgetToGo(win, uname):
     showLogo(win.centralWidget(), 'minetest_logo.svg')
 
 
-
 def showLogo(win, logoName):
-    
-    logoPath = os.path.join('assets' , logoName)
-    
+
+    logoPath = os.path.join('assets', logoName)
+
     ico = QGraphicsSvgItem(logoPath)
     scene = QGraphicsScene()
     scene.addItem(ico)
-    
+
     win.logo.setScene(scene)
 
 
-
 def getJoinHelp():
-    
+
     ui_file = QFile("views/help.ui")
     ui_file.open(QFile.ReadOnly)
-    
+
     lder = QUiLoader()
     dlg = lder.load(ui_file)
-    
+
     resUrl = QUrl('assets/helptext/signon.md')
     dlg.help_text.setSource(resUrl)
 
     dlg.exec_()
+
 
 def initUser(win):
     uname = win.centralWidget().uname.text()
@@ -117,15 +119,15 @@ def initUser(win):
     if not len(passwd):
         win.centralWidget().eMesg.setText('Error. Password must not be empty')
         return None
-    
+
     if not len(uname):
         win.centralWidget().eMesg.setText('Error, Cannot have empty UserName')
         return None
-    
+
     if len(uname) > 20:
         win.centralWidget().eMesg.setText(f'Error, UserName too long. \n{len(uname)} > 20')
         return None
-    
+
     if any(char in list(sessionVars.whitespace) for char in uname):
         win.centralWidget().eMesg.setText(f'Error. Username contains whitespace')
 
@@ -135,10 +137,9 @@ def initUser(win):
 
     succsess, error = auth.addUser(uname, passwd)
     if not succsess:
-        win.centralWidget().eMesg.setText(error)    
+        win.centralWidget().eMesg.setText(error)
     else:
         changeWidgetToGo(win, uname)
-
 
 
 def initNscreen(stylesheets):
@@ -150,57 +151,57 @@ def initNscreen(stylesheets):
     wdg_file = QFile("views/start.widget.ui")
 
     lder = QUiLoader()
-    
+
     win = lder.load(ui_file)
     wdg = lder.load(wdg_file)
 
     win.setCentralWidget(wdg)
 
     showLogo(win.centralWidget(), 'minetest_logo.svg')
-    
+
     win.centralWidget().help.clicked.connect(lambda: getJoinHelp())
     win.centralWidget().go.clicked.connect(lambda: initUser(win))
-    
+
     auth.runSetup()
 
     win.show()
     app.exec_()
     sys.exit(0)
-        
 
 
 def initRscreen(stylesheets):
-    
+
     app = QApplication([])
     app.setStyleSheet(stylesheets)
-    
+
     ui_file = QFile("views/main.ui")
     ui_file.open(QFile.ReadOnly)
     wdg_file = QFile("views/login.widget.ui")
     wdg_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()
-    
+
     win = lder.load(ui_file)
     wdg = lder.load(wdg_file)
-    
+
     win.setCentralWidget(wdg)
-    
+
     showLogo(win.centralWidget(), 'minetest_logo.svg')
-    
+
     win.centralWidget().usernamesubmit.clicked.connect(lambda: login(win))
 
     win.show()
     app.exec_()
-    
-    sys.exit(0)
 
+    sys.exit(0)
 
 
 if __name__ == "__main__":
     stylesheets = compile()
-    print(os.path.isfile(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3')), '\n', os.listdir(os.path.join(pathlib.Path().home(), '.config', 'mtclient')))
-    if os.path.isfile(os.path.join(pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3')):
+    if os.path.isfile(os.path.join(pathlib.Path().home(),
+                                   '.config',
+                                   'mtclient',
+                                   'database.sqlite3')):
         print('using old db')
         initRscreen(stylesheets)
     else:
