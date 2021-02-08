@@ -52,7 +52,7 @@ def showPass(win):
 
 
 def changeWidgetToGo(win, uname):
-    ui_file = QFile(sessionVars.viewPath / "go.widget.ui")
+    ui_file = QFile(str(sessionVars.viewPath / "go.widget.ui"))
     ui_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()
@@ -63,7 +63,7 @@ def changeWidgetToGo(win, uname):
     win.setCentralWidget(dlg)
 
     engs = runner.getEngs()
-    pxmp = QPixmap(sessionVars.assetPath / 'icon.png', format="png")
+    pxmp = QPixmap(str(sessionVars.assetPath / 'icon.png'), format="png")
     icn = QIcon(pxmp)
     for engine in engs:
         win.centralWidget().engines.addItem(icn, engine)
@@ -75,8 +75,18 @@ def changeWidgetToGo(win, uname):
     win.centralWidget().port.setText('30000')
     win.centralWidget().addr.setText('nri.edgy1.net')
 
-    win.centralWidget().go.clicked.connect(lambda: runner.intiate(win.centralWidget().addr.text(), win.centralWidget().port.text(), win.centralWidget(
-    ).uname.text(), win.centralWidget().engines.currentText(), win.centralWidget().passwdIn.text(), win.centralWidget().showPass.isChecked(), win))
+    win.centralWidget().go.clicked.connect((lambda:runner.intiate(
+                                            win.centralWidget().addr.text(),
+                                            win.centralWidget().port.text(),
+                                            win.centralWidget().uname.text()
+                                            ,win.centralWidget().engines.
+                                        		currentText(),
+                                            win.centralWidget().passwdIn.
+                                            	text(),
+                                            win.centralWidget().showPass
+                                            	.isChecked(), 
+                                            win)
+    ))
 
     win.centralWidget().showPass.stateChanged.connect(lambda: showPass(win))
 
@@ -85,7 +95,7 @@ def changeWidgetToGo(win, uname):
 
 def showLogo(win, logoName):
 
-    logoPath = sessionVars.assetPath / logoName
+    logoPath = str(sessionVars.assetPath / logoName)
 
     ico = QGraphicsSvgItem(logoPath)
     scene = QGraphicsScene()
@@ -96,13 +106,13 @@ def showLogo(win, logoName):
 
 def getJoinHelp():
 
-    ui_file = QFile(sessionVars.viewPath / "help.ui")
+    ui_file = QFile(str(sessionVars.viewPath / "help.ui"))
     ui_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()
     dlg = lder.load(ui_file)
 
-    resUrl = QUrl(sessionVars.helpPath / 'signon.md')
+    resUrl = QUrl(str(sessionVars.helpPath / 'signon.md'))
     dlg.help_text.setSource(resUrl)
 
     dlg.exec_()
@@ -131,10 +141,12 @@ def initUser(win):
         return None
 
     if any(char in list(sessionVars.whitespace) for char in uname):
-        win.centralWidget().eMesg.setText(f'Error. Username contains whitespace')
+        win.centralWidget().eMesg.setText(
+            f'Error. Username contains whitespace')
 
     if passwd == uname:
-        win.centralWidget().eMesg.setText('Error, Cannot have UserName == Password')
+        win.centralWidget().eMesg.setText(
+            'Error, Cannot have UserName == Password')
         return None
 
     succsess, error = auth.addUser(uname, passwd)
@@ -148,9 +160,9 @@ def initNscreen(stylesheets):
     app = QApplication([])
     app.setStyleSheet(stylesheets)
 
-    ui_file = QFile(sessionVars.viewPath / "main.ui")
+    ui_file = QFile(str(sessionVars.viewPath / "main.ui"))
     ui_file.open(QFile.ReadOnly)
-    wdg_file = QFile(sessionVars.viewPath / "start.widget.ui")
+    wdg_file = QFile(str(sessionVars.viewPath / "start.widget.ui"))
 
     lder = QUiLoader()
 
@@ -170,15 +182,14 @@ def initNscreen(stylesheets):
     app.exec_()
     sys.exit(0)
 
-
 def initRscreen(stylesheets):
 
     app = QApplication([])
     app.setStyleSheet(stylesheets)
 
-    ui_file = QFile(sessionVars.viewPath / "main.ui")
+    ui_file = QFile(str(sessionVars.viewPath / "main.ui"))
     ui_file.open(QFile.ReadOnly)
-    wdg_file = QFile(sessionVars.viewPath / "login.widget.ui")
+    wdg_file = QFile(str(sessionVars.viewPath / "login.widget.ui"))
     wdg_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()

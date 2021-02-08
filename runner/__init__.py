@@ -91,7 +91,7 @@ def getPass(uname, port, addr):
                 bytes.fromhex(dbVal[1]),
                 bytes.fromhex(dbVal[0]))
 
-            # print(rv)
+            print(rv)
             return rv
         except Exception as e:
             showException(e)
@@ -151,7 +151,7 @@ def savePasswd(addr, port, uname, passwd):
         dlg = lder.load(dlg_file)
         dlg.confText.setText('Error\n'
                              + f'You already have a password for {addr}:{port}'
-                             + f'and username {uname}\n'
+                             + f' and username {uname}\n'
                              + 'Do you wish to overwrite?')
         dlg.accepted.connect(
             lambda: overWritePass(addr, port, uname, passwd))
@@ -161,7 +161,7 @@ def savePasswd(addr, port, uname, passwd):
 
 
 def showAskPass(uname: str, addr: str, port: str, passwd: str):
-    dlg_file = QFile(sessionVars.viewPath / 'savepasswd.dialog.ui')
+    dlg_file = QFile(str(sessionVars.viewPath / 'savepasswd.dialog.ui'))
     lder = QUiLoader()
     dlg = lder.load(dlg_file)
     dlg.addr.setText(f'{addr} :{port}')
@@ -180,7 +180,7 @@ def intiate(addr, port, uname, engName, passIn, noIgnorePass, win):
         passwd = getPass(uname, port, addr)
         if not passwd:
             savePasswd(addr, port, uname, mkPass(uname))
-            dlg_file = QFile(sessionVars.viewPath / 'notifypass.dialog.ui')
+            dlg_file = QFile(str(sessionVars.viewPath / 'notifypass.dialog.ui'))
             lder = QUiLoader()
 
             dlg = lder.load(dlg_file)
