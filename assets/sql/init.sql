@@ -1,3 +1,1 @@
-CREATE TABLE users ( username VARCHAR(20) UNIQUE, passwd VARCHAR(256));
-CREATE TABLE passwds (addr VARCHAR, port INT, uname VARCHAR, passwd BLOB, iv BLOB);
-CREATE TABLE history(addr VARCHAR, port INT, uname VARCHAR, timeAt VARCHAR);
+CREATE TABLE users( username VARCHAR(20) UNIQUE, passwd VARCHAR(256)); CREATE TABLE passwds ( uid VARCHAR UNIQUE, addr VARCHAR, port INT, uname VARCHAR, passwd VARCHAR, iv VARCHAR, slt VARCHAR); CREATE TABLE history(addr VARCHAR, port INT, uname VARCHAR, timeAt VARCHAR); CREATE TABLE engines(name VARCHAR, version VARCHAR, protoMin INT, protoMax INT, permalink VARCHAR); CREATE TABLE meta( db_version VARCHAR, launcher_version VARCHAR);

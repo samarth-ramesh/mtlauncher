@@ -11,7 +11,6 @@ import sqlite3
 import subprocess
 import sys
 import traceback
-import hashlib
 import pathlib
 
 import sessionVars
@@ -80,16 +79,17 @@ def getPass(uname, port, addr):
     cur = conn.cursor()
     uid = auth.getUid(addr, port, uname)
 
-    cur.execute('SELECT passwd, iv FROM passwds WHERE uid = ?', (uid, ))
+    cur.execute('SELECT passwd, iv, slt FROM passwds WHERE uid = ?', (uid, ))
 
     dbVal = cur.fetchone()
     conn.close()
     if dbVal:
         try:
-            rv = auth.decryptPayload(bytes(
-                sessionVars.password, encoding='UTF-8'),
-                auth.getSalt(uname, addr, port),
-                bytes.fromhex(dbVal[1]), bytes.fromhex(dbVal[0]))
+            rv = auth.decryptPayload(
+                bytes(sessionVars.password, encoding='UTF-8'),
+                bytes.fromhex(dbVal[2]),
+                bytes.fromhex(dbVal[1]),
+                bytes.fromhex(dbVal[0]))
 
             # print(rv)
             return rv
@@ -97,12 +97,34 @@ def getPass(uname, port, addr):
             showException(e)
 
 
-def savePasswd(addr, port, uname, passwd):
+def overWritePass(uname, passwd, port, addr):
     iv = os.urandom(8)
+    slt = os.urandom(16)
     try:
         passToken = auth.encryptPayload(bytes(sessionVars.password,
                                               encoding='UTF-8'),
-                                        auth.getSalt(uname, addr, port),
+                                        slt,
+                                        iv,
+                                        bytes(passwd, encoding='UTF-8'))
+    except Exception as e:
+        showException(e)
+
+    uid = auth.getUid(addr, port, uname)
+    conn = sqlite3.connect(os.path.join(
+        pathlib.Path().home(), '.config', 'mtclient', 'database.sqlite3'))
+
+    cur = conn.cursor()
+    cur.execute('UPDATE passwds SET passwd = ?, iv=?, slt=? WHERE uid = ?',
+                (passToken.hex(), iv.hex(), slt.hex(), uid,))
+
+
+def savePasswd(addr, port, uname, passwd):
+    iv = os.urandom(8)
+    slt = os.urandom(16)
+    try:
+        passToken = auth.encryptPayload(bytes(sessionVars.password,
+                                              encoding='UTF-8'),
+                                        slt,
                                         iv,
                                         bytes(passwd, encoding='UTF-8'))
     except Exception as e:
@@ -115,17 +137,31 @@ def savePasswd(addr, port, uname, passwd):
 
     cur = conn.cursor()
 
-    cur.execute('INSERT INTO passwds(addr, port, uname, passwd, iv, uid)\
-    		VALUES (?, ?, ?, ?, ?, ?)',
-                (addr, port, uname, passToken.hex(), iv.hex(), uid))
+    try:
+        cur.execute('INSERT INTO passwds(addr, port, uname, passwd, iv, uid, slt)\
+                VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    (addr, port, uname, passToken.hex(), iv.hex(), uid, slt.hex()))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        conn.rollback()
+        conn.close()
+        dlg_file = QFile('views/overwritePass.dialog.ui')
+        lder = QUiLoader()
+        dlg = lder.load(dlg_file)
+        dlg.confText.setText('Error\n'
+                             + f'You already have a password for {addr}:{port}'
+                             + f'and username {uname}\n'
+                             + 'Do you wish to overwrite?')
+        dlg.accepted.connect(
+            lambda: overWritePass(addr, port, uname, passwd))
+        dlg.exec_()
 
-    conn.commit()
-    conn.close()
     #print('saved Password')
 
 
 def showAskPass(uname: str, addr: str, port: str, passwd: str):
-    dlg_file = QFile('views/savepasswd.dialog.ui')
+    dlg_file = QFile(sessionVars.viewPath / 'savepasswd.dialog.ui')
     lder = QUiLoader()
     dlg = lder.load(dlg_file)
     dlg.addr.setText(f'{addr} :{port}')
@@ -144,8 +180,16 @@ def intiate(addr, port, uname, engName, passIn, noIgnorePass, win):
         passwd = getPass(uname, port, addr)
         if not passwd:
             savePasswd(addr, port, uname, mkPass(uname))
+            dlg_file = QFile(sessionVars.viewPath / 'notifypass.dialog.ui')
+            lder = QUiLoader()
 
-    confPath = os.path.join(os.getcwd(), 'assets', 'config', 'mtclient.conf')
+            dlg = lder.load(dlg_file)
+            dlg.tbox.setText('Saving password for\n' +
+                             f'{uname}@{addr}:{port}\n' +
+                             f'as {passwd}.')
+            dlg.exec_()
+
+    confPath = sessionVars.assetPath / 'config' / 'mtclient.conf'
 
     args = ['--go',
             '--config {}'.format(confPath),

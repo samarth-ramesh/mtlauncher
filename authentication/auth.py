@@ -10,8 +10,7 @@ import os
 import pathlib
 
 from Crypto.Cipher import ChaCha20
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Hash import SHA512
+from Crypto.Protocol.KDF import scrypt
 
 
 def checkLogin(passwd, login):
@@ -26,13 +25,15 @@ def checkLogin(passwd, login):
                               100000)
     cur = conn.cursor()
     cur.execute("SELECT passwd FROM users WHERE username = ?", (login, ))
+    helpTextPath = pathlib.Path() / 'assets' / 'helptext'
+
     try:
         if not inp.hex() == cur.fetchone()[0]:
-            return (0, "assets/helptext/inc_passwd.md")
+            return (0, helpTextPath / "inc_passwd.md")
         else:
             return (1, None)
-    except(TypeError, IndexError):
-        return (0, "assets/helptext/passwd_error.md")
+    except(TypeError):
+        return (0, helpTextPath / "passwd_error.md")
 
 
 def runSetup():
@@ -49,7 +50,9 @@ def runSetup():
         'mtclient',
         'database.sqlite3'))
     cur = conn.cursor()
-    with open('assets/sql/init.sql', 'r') as fp:
+
+    sqlPath = pathlib.Path() / 'assets' / 'sql' / 'init.sql'
+    with open(sqlPath, 'r') as fp:
         cur.executescript(fp.read())
     conn.close()
     print('Loaded Database')
@@ -91,8 +94,7 @@ def addUser(uname, passwd):
 
 
 def encryptPayload(passwd: bytes, salt: bytes, iv: bytes, payload: bytes):
-    key = PBKDF2(password=passwd, salt=salt,
-                 hmac_hash_module=SHA512, dkLen=32)
+    key = scrypt(password=passwd, salt=salt, N=(2**14), key_len=32, r=8, p=1)
     #print(key, iv, salt)
     cipher = ChaCha20.new(key=key, nonce=iv)
     rv = cipher.encrypt(payload)
@@ -101,15 +103,10 @@ def encryptPayload(passwd: bytes, salt: bytes, iv: bytes, payload: bytes):
 
 
 def decryptPayload(passwd: bytes, salt: bytes, iv: bytes, payload: bytes):
-    key = PBKDF2(password=passwd, salt=salt,
-                 hmac_hash_module=SHA512, dkLen=32)
+    key = scrypt(password=passwd, salt=salt, N=(2**14), key_len=32, r=8, p=1)
     cipher = ChaCha20.new(key=key, nonce=iv)
     rv = cipher.decrypt(payload)
     print(payload)
     # print(rv)
     return rv.decode(encoding='UTF-8')
 
-
-def getSalt(uname: str, addr: str, port: str):
-    return hashlib.sha256(bytes((uname + addr + port),
-                                encoding='UTF-8')).digest()

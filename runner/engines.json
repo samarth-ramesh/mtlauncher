@@ -1,0 +1,23 @@
+[
+	{
+		"name": "Minetest 5.3",
+		"fname": "el53",
+		"OS": "Linux",
+		"dateCreated": "2020-07-09",
+		"urlEndPoint": "minetest/engines/el53",
+		"protocolData": {
+			"min_ver": 37,
+			"maxVer": -1,
+			"ver": 39
+		},
+		"isDev": false,
+		"commit": null
+	},
+	{
+		"name": "Minetest 0.4.17.1",
+		"fname": "el0417",
+		"OS": "Linux",
+		"dateCreated": "2018-06-10",
+		"urlEndPoint": "minetest/engines/el04171",
+	},
+]

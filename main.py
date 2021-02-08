@@ -52,7 +52,7 @@ def showPass(win):
 
 
 def changeWidgetToGo(win, uname):
-    ui_file = QFile("views/go.widget.ui")
+    ui_file = QFile(sessionVars.viewPath / "go.widget.ui")
     ui_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()
@@ -63,7 +63,7 @@ def changeWidgetToGo(win, uname):
     win.setCentralWidget(dlg)
 
     engs = runner.getEngs()
-    pxmp = QPixmap('assets/icon.png', format="png")
+    pxmp = QPixmap(sessionVars.assetPath / 'icon.png', format="png")
     icn = QIcon(pxmp)
     for engine in engs:
         win.centralWidget().engines.addItem(icn, engine)
@@ -75,7 +75,8 @@ def changeWidgetToGo(win, uname):
     win.centralWidget().port.setText('30000')
     win.centralWidget().addr.setText('nri.edgy1.net')
 
-    win.centralWidget().go.clicked.connect(lambda: runner.intiate(win.centralWidget().addr.text(), win.centralWidget().port.text(), win.centralWidget().uname.text(), win.centralWidget().engines.currentText(), win.centralWidget().passwdIn.text(), win.centralWidget().showPass.isChecked(), win))
+    win.centralWidget().go.clicked.connect(lambda: runner.intiate(win.centralWidget().addr.text(), win.centralWidget().port.text(), win.centralWidget(
+    ).uname.text(), win.centralWidget().engines.currentText(), win.centralWidget().passwdIn.text(), win.centralWidget().showPass.isChecked(), win))
 
     win.centralWidget().showPass.stateChanged.connect(lambda: showPass(win))
 
@@ -84,7 +85,7 @@ def changeWidgetToGo(win, uname):
 
 def showLogo(win, logoName):
 
-    logoPath = os.path.join('assets', logoName)
+    logoPath = sessionVars.assetPath / logoName
 
     ico = QGraphicsSvgItem(logoPath)
     scene = QGraphicsScene()
@@ -95,13 +96,13 @@ def showLogo(win, logoName):
 
 def getJoinHelp():
 
-    ui_file = QFile("views/help.ui")
+    ui_file = QFile(sessionVars.viewPath / "help.ui")
     ui_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()
     dlg = lder.load(ui_file)
 
-    resUrl = QUrl('assets/helptext/signon.md')
+    resUrl = QUrl(sessionVars.helpPath / 'signon.md')
     dlg.help_text.setSource(resUrl)
 
     dlg.exec_()
@@ -125,7 +126,8 @@ def initUser(win):
         return None
 
     if len(uname) > 20:
-        win.centralWidget().eMesg.setText(f'Error, UserName too long. \n{len(uname)} > 20')
+        win.centralWidget().eMesg.setText(
+            f'Error, UserName too long. \n{len(uname)} > 20')
         return None
 
     if any(char in list(sessionVars.whitespace) for char in uname):
@@ -146,9 +148,9 @@ def initNscreen(stylesheets):
     app = QApplication([])
     app.setStyleSheet(stylesheets)
 
-    ui_file = QFile("views/main.ui")
+    ui_file = QFile(sessionVars.viewPath / "main.ui")
     ui_file.open(QFile.ReadOnly)
-    wdg_file = QFile("views/start.widget.ui")
+    wdg_file = QFile(sessionVars.viewPath / "start.widget.ui")
 
     lder = QUiLoader()
 
@@ -174,9 +176,9 @@ def initRscreen(stylesheets):
     app = QApplication([])
     app.setStyleSheet(stylesheets)
 
-    ui_file = QFile("views/main.ui")
+    ui_file = QFile(sessionVars.viewPath / "main.ui")
     ui_file.open(QFile.ReadOnly)
-    wdg_file = QFile("views/login.widget.ui")
+    wdg_file = QFile(sessionVars.viewPath / "login.widget.ui")
     wdg_file.open(QFile.ReadOnly)
 
     lder = QUiLoader()

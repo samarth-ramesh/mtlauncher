@@ -37,3 +37,9 @@
     background-color: #CB410B;
     color: red
 }
+
+.QDialog {
+    background-color: #3F4045;
+    color: ivory;
+    text-align: HCenter;
+}
