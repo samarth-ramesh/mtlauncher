@@ -4,6 +4,9 @@ The worlds first ~~or so we think~~ launcher for mt that works with both 0.4x an
 Written in Qt & Python, it attempts to be a clean and modern take on the launcher.  
 Please note that things are still *very* pre alpha right now. It is known to work on latest arch linux.
 
+## WARNING
+Currently not working. You may help fix it if you wish.
+
 ## Installation
 
 install pyside2, qt5 and the pyCryptoDome library on your system. This varies from distro to distro.
